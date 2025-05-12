@@ -39,3 +39,9 @@ li{
   cursor: pointer;
   transition: all;
 }
+
+.about{
+  margin-top: 25px;
+  font-size: larger;
+  font-family: Arial, Helvetica, sans-serif;
+}

@@ -1,4 +1,5 @@
 import React from 'react'
+import { NavLink } from 'react-router'
 
 const Navbar = () => {
     return (
@@ -9,7 +10,9 @@ const Navbar = () => {
                 </div>
                 <div className='widgets'>
                     <ul className="">
-                        <li className=''>Home</li>
+                        <li>
+                        <NavLink to={"/about"} className={({ isActive }) => (isActive ? 'active-link' : 'inactive-link')}>About</NavLink>
+                        </li>
                         <li className=''>Your Tasks</li>
                     </ul>
                 </div>
