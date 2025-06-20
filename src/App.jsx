@@ -5,6 +5,7 @@ import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import About from './components/about';
 import { Routes, Route } from 'react-router-dom';
+import axios from 'axios';
 
 function App() {
 
@@ -21,28 +22,29 @@ function App() {
   ];
 
   useEffect(() => {
-    const storedTasks = JSON.parse(localStorage.getItem('allTODO'));
-    console.log('Retrieved from localStorage:', storedTasks);
-    if (storedTasks && Array.isArray(storedTasks)) {
-      setallTODO(storedTasks);
-    }
+    axios.get("http://localhost:3000/api/tasks")
+      .then(result => {
+        setallTODO(result.data);
+        console.log("Saved successfully: ", result.data);
+      })
+      .catch(err => console.log(err));
   }, []);
-
-  useEffect(() => {
-    console.log('Saving to localStorage:', allTODO);
-    localStorage.setItem('allTODO', JSON.stringify(allTODO));
-  }, [allTODO]);
-
-  useEffect(() => {
-    console.log('Saving finished tasks to localStorage:', finishedTODO);
-    localStorage.setItem('finishedTODO', JSON.stringify(finishedTODO));
-  }, [finishedTODO]);
 
   const handleAddTask = () => {
     if (todo.trim() !== '') {
       const updatedTasks = [...allTODO, { text: todo, isCompleted: false }];
       setallTODO(updatedTasks);
-      localStorage.setItem('allTODO', JSON.stringify(updatedTasks));
+
+      const data = { text: todo, isCompleted: false };
+
+      axios.post("http://localhost:3000/api/tasks", data)
+        .then(response => {
+          console.log('User created:', response.data);
+        })
+        .catch(error => {
+          console.error('Error creating user:', error);
+        });
+
       settodo('');
     }
   };
@@ -58,20 +60,34 @@ function App() {
   };
 
   const saveEdit = (idx, newText) => {
-    const updatedTasks = allTODO.map((task, index) => {
-      if (index === idx) {
-        return { ...task, text: newText, isEditing: false };
-      }
-      return task;
-    });
-    setallTODO(updatedTasks);
-    localStorage.setItem('allTODO', JSON.stringify(updatedTasks));
+    const task = allTODO[idx];
+    axios.put(`http://localhost:3000/api/tasks/${task._id}`, {
+      text: newText,
+      isCompleted: task.isCompleted
+    })
+      .then(response => {
+        const updatedTasks = allTODO.map((t, i) =>
+          i === idx ? { ...response.data, isEditing: false } : t
+        );
+        setallTODO(updatedTasks);
+      })
+      .catch(error => {
+        console.error('Error updating task:', error);
+      });
   };
 
   const handleDelete = (idx) => {
+    const task = allTODO[idx];
     const updatedTasks = allTODO.filter((_, index) => index !== idx);
     setallTODO(updatedTasks);
-    localStorage.setItem('allTODO', JSON.stringify(updatedTasks));
+
+    axios.delete(`http://localhost:3000/api/tasks/${task._id}`)
+      .then(response => {
+        console.log("Task deleted: ", response.data);
+      })
+      .catch(error => {
+        console.error('Error deleting task:', error);
+      });
   };
 
   const handleChange = (idx) => {
